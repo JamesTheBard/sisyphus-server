@@ -1,12 +1,15 @@
 import json
 import uuid
 from datetime import datetime
+
 from box import Box
 from flask import request
 from flask_restx import Resource
 
-from app import api, redis, Config
-from app.models.queue import queue_job_post, queue_list_model, queue_job_model, queue_id_model, queue_attributes_model, queue_attributes_default
+from app import Config, api, redis
+from app.models.queue import (queue_attributes_default, queue_attributes_model,
+                              queue_id_model, queue_job_model, queue_job_post,
+                              queue_list_model)
 from app.models.workers import workers_disable_model
 
 queue_ns = api.namespace('queue', description="Queue operations")

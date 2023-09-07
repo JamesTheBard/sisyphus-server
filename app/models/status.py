@@ -4,7 +4,7 @@ from app import api
 from app.config import Config
 
 status_config_backend_model = api.model("StatusConfigBackendModel", {
-    'COUCHDB_URI': fields.String(description='The URI of the CouchDB server', example='http://localhost:5984'),
+    'MONGO_URI': fields.String(description='The URI of the MongoDB server', example='mongodb://localhost:27017'),
     'REDIS_URI': fields.String(description='The URI of the Redis/KeyDB server', example='redis://localhost:6379'),
 })
 

@@ -27,7 +27,7 @@ class ServerStatus(Resource):
     def get(self):
         data = Box()
         data.backend = {
-            "COUCHDB_URI": sanitize_uri(Config.COUCHDB_URI),
+            "MONGO_URI": sanitize_uri(Config.MONGO_URI),
             "REDIS_URI": sanitize_uri(Config.REDIS_URI),
         }
         data.version = Config.VERSION

@@ -6,12 +6,25 @@ from flask_restx import Resource
 
 from app import api, redis
 from app.config import Config
-from app.models.workers import workers_disable_model, workers_status_model
+from app.models.workers import workers_status_model, workers_attributes_model, workers_attributes_default, workers_model
 
-ns = api.namespace('worker', description="Worker operations")
+ns = api.namespace('workers', description="Worker operations")
 
 r_worker = Config.REDIS_WORKER_PREFIX + '_id:'
-r_disabled = Config.REDIS_WORKER_PREFIX + '_disabled:'
+r_attributes = Config.REDIS_WORKER_PREFIX + '_attributes:'
+
+
+@ns.route('')
+class WorkersOperations(Resource):
+    @ns.doc(description="Get all online workers.")
+    @ns.response(200, 'Success', workers_model)
+    def get(self):
+        response = Box()
+        keys = redis.keys(r_worker + '*')
+        response.workers = [i.decode().split(':')[-1]
+                            for i in redis.keys(r_worker + '*')]
+        response.count = len(response.workers)
+        return response, 200
 
 
 @ns.route('/<string:worker_id>')
@@ -22,7 +35,13 @@ class WorkerOperations(Resource):
     def get(self, worker_id):
         if not (content := redis.get(r_worker + worker_id)):
             return None, 404
-        return json.loads(content), 200
+        content = Box(json.loads(content))
+        key = r_attributes + worker_id
+        if not (attributes := redis.get(key)):
+            attributes = json.dumps(workers_attributes_default, default=str)
+            redis.set(key, attributes)
+        content.attributes = json.loads(attributes)
+        return content, 200
 
     @ns.doc(description="Update the current status of a worker.", body=workers_status_model)
     @ns.response(204, 'Worker Updated')
@@ -32,6 +51,19 @@ class WorkerOperations(Resource):
         redis.set(r_worker + worker_id, content)
         return None, 204
 
+    @ns.doc(description="Update the attributes of a worker.")
+    @ns.expect(workers_attributes_model, validate=True)
+    @ns.response(204, 'Worker Attributes Updated')
+    @ns.response(400, 'Bad Request')
+    def patch(self, worker_id):
+        key = r_attributes + worker_id
+        req = request.get_json()
+        attributes = json.loads(redis.get(key))
+        for k, v in req.items():
+            attributes[k] = v
+        redis.set(key, json.dumps(attributes, default=str))
+        return None, 204
+
     @ns.doc(description="Remove the current status of a worker.")
     @ns.response(204, 'Worker Removed')
     @ns.response(404, 'Worker Not Found')
@@ -39,30 +71,3 @@ class WorkerOperations(Resource):
         if not redis.unlink(r_worker + worker_id):
             return None, 404
         return None, 204
-
-
-@ns.route('/<string:worker_id>/disable')
-class WorkerDisableSettings(Resource):
-    @ns.doc(description="Get whether the worker has access to the queue.")
-    @ns.response(200, 'Success', workers_disable_model)
-    def get(self, worker_id):
-        key = r_disabled + worker_id
-        if redis.get(key):
-            return {"disabled": True}, 200
-        return {"disabled": False}, 200
-
-    @ns.doc(description="Disable a worker's access to the queue.")
-    @ns.response(204, 'Worker Disabled')
-    def post(self, worker_id):
-        key = r_disabled + worker_id
-        redis.set(key, True)
-        return None, 204
-
-    @ns.doc(description="Enable a worker's access to the queue.")
-    @ns.response(204, 'Worker Enabled')
-    @ns.response(404, 'Worker Not Found')
-    def delete(self, worker_id):
-        key = r_disabled + worker_id
-        if redis.unlink(key):
-            return None, 204
-        return None, 404

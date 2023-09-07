@@ -13,6 +13,17 @@ example_task = {
     }
 }
 
+queue_attributes_default = {
+    'disabled': False,
+}
+
+queue_attributes_model = api.model(
+    'QueueAttribute', {
+        'disabled': fields.Boolean(description='Whether the queue is enabled or disabled', example=False, default=False)
+    },
+    strict=True
+)
+
 queue_job_post = api.model('QueueJobPost', {
     'job_title': fields.String(description='The title of the job', required=True, example="Awesome Encoder Job"),
     'tasks': fields.List(fields.Raw, description='The tasks associated with the job', required=True, example=example_task),
@@ -27,7 +38,8 @@ queue_job_model = api.model('QueueJobModel', {
 
 queue_list_model = api.model('QueueJobList', {
     'queue': fields.List(fields.Nested(queue_job_model)),
-    'entries': fields.Integer(description='The number of jobs in the queue.', example=1)
+    'entries': fields.Integer(description='The number of jobs in the queue.', example=1),
+    'attributes': fields.Nested(queue_attributes_model)
 })
 
 queue_id_model = api.model('QueueID', {

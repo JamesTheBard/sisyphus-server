@@ -32,8 +32,10 @@ class QueueMain(Resource):
             redis.set(r_queue_attributes, attributes)
         return {'queue': queue, 'entries': len(queue), 'attributes': json.loads(attributes)}, 200
 
-    @queue_ns.doc(body=queue_job_post, description="Add a job to the end of the current queue.")
+    @queue_ns.doc(description="Add a job to the end of the current queue.")
+    @queue_ns.expect(queue_job_post, validate=True)
     @queue_ns.response(200, 'Success', queue_id_model)
+    @queue_ns.response(400, 'Bad Request')
     def post(self):
         job_id = str(uuid.uuid4())
         req = Box(request.get_json())

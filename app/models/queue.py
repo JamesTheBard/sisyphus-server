@@ -24,15 +24,16 @@ queue_attributes_model = api.model(
     strict=True
 )
 
-queue_job_post = api.model('QueueJobPost', {
-    'job_title': fields.String(description='The title of the job', required=True, example="Awesome Encoder Job"),
-    'tasks': fields.List(fields.Raw, description='The tasks associated with the job', required=True, example=example_task),
-})
+queue_job_post = api.model(
+    'QueueJobPost', {
+        'job_title': fields.String(description='The title of the job', required=True, example="Awesome Encoder Job"),
+        'tasks': fields.Raw(description='The tasks associated with the job', required=True, example=example_task),
+    },
+    strict=True
+)
 
-queue_job_model = api.model('QueueJobModel', {
-    'job_title': fields.String(description='The title of the job', example="Awesome Encoder Job"),
+queue_job_model = api.inherit('QueueJobModel', queue_job_post, {
     'job_id': fields.String(description='The Job ID for the job', example="00000000-1111-2222-3333-444444444444"),
-    'tasks': fields.List(fields.Raw, description='The tasks associated with the job', example=example_task),
     'added': fields.DateTime(description="The date/time the job was added to the queue", example=str(datetime.utcnow()))
 })
 

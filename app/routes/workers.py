@@ -6,7 +6,9 @@ from flask_restx import Resource
 
 from app import api, redis
 from app.config import Config
-from app.models.workers import workers_status_model, workers_attributes_model, workers_attributes_default, workers_model
+from app.models.workers import (workers_attributes_default,
+                                workers_attributes_model, workers_model,
+                                workers_status_model, workers_status_post)
 
 ns = api.namespace('workers', description="Worker operations")
 
@@ -43,7 +45,8 @@ class WorkerOperations(Resource):
         content.attributes = json.loads(attributes)
         return content, 200
 
-    @ns.doc(description="Update the current status of a worker.", body=workers_status_model)
+    @ns.doc(description="Update the current status of a worker.")
+    @ns.expect(workers_status_post, validate=True)
     @ns.response(204, 'Worker Updated')
     def post(self, worker_id):
         req = request.get_json()

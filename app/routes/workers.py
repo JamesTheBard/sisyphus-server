@@ -51,7 +51,7 @@ class WorkerOperations(Resource):
     def post(self, worker_id):
         req = request.get_json()
         content = json.dumps(req, default=str)
-        redis.set(r_worker + worker_id, content)
+        redis.set(r_worker + worker_id, content, ex=Config.CLIENT_EXIPRY)
         return None, 204
 
     @ns.doc(description="Update the attributes of a worker.")

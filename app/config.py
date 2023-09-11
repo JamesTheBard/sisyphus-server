@@ -14,7 +14,7 @@ class Config:
     MONGO_URI = os.environ.get(
         "MONGO_URI", "mongodb://root:root@localhost:27017")
 
-    CLIENT_EXIPRY = int(os.environ.get("CLIENT_EXPIRY", "10"))
+    CLIENT_EXIPRY = int(os.environ.get("CLIENT_EXPIRY", "30"))
     MONGO_DATA_DB = os.environ.get("MONGO_DATA_DB", "sisyphus_modules")
     MONGO_DATA_COLL_PREFIX = os.environ.get("MONGO_PREFIX", "data_")
 

@@ -52,6 +52,9 @@ class QueueMain(Resource):
     @queue_ns.response(400, 'Bad Request')
     def patch(self):
         req = Box(request.get_json())
+        if not (attributes := redis.get(r_queue_attributes)):
+            attributes = json.dumps(queue_attributes_default, default=str)
+            redis.set(r_queue_attributes, attributes)
         attributes = json.loads(redis.get(r_queue_attributes))
         for k, v in req.items():
             attributes[k] = v
@@ -73,8 +76,9 @@ class PollQueue(Resource):
     @queue_ns.response(200, 'Success', queue_job_model)
     @queue_ns.response(404, 'Queue is Empty')
     def get(self):
-        if not (job_id := redis.rpop(r_queue).decode()):
+        if not (job_id := redis.rpop(r_queue)):
             return None, 404
+        job_id = job_id.decode()
         content = redis.get(r_key + job_id)
         redis.unlink(r_key + job_id)
         return json.loads(content), 200

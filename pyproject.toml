@@ -15,6 +15,7 @@ pycouchdb = "^1.14.2"
 python-box = "^7.1.1"
 humanize = "^4.8.0"
 pymongo = "^4.5.0"
+gunicorn = "^21.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

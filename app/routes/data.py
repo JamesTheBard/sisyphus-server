@@ -16,10 +16,13 @@ ns = api.namespace('data', description="Data operations")
 class DataOpsMain(Resource):
     @ns.doc(description="Get data associated with a Sisyphus module")
     @ns.response(200, 'Success')
+    @ns.response(404, 'Data Not Found')
     def get(self, module, name):
         db = mongo[Config.MONGO_DATA_DB]
         coll = db[Config.MONGO_DATA_COLL_PREFIX + module]
         post = coll.find_one({"name": name})
+        if post == None:
+            return None, 404
         return make_response(json_util.dumps(post), 200)
 
     @ns.doc(description="Configure data associated with a Sisyphus module")

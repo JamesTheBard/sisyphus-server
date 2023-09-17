@@ -2,7 +2,8 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
 COPY main.py main.py
 COPY app app
 

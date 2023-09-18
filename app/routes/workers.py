@@ -31,8 +31,8 @@ def get_attributes(worker_id: str) -> Box:
     if not (attributes := redis.get(key)):
         attributes = json.dumps(workers_attributes_default, default=str)
         redis.set(key, attributes)
-    attributes = json.loads(attributes)
-    return Box(attributes)
+    attributes = Box(json.loads(attributes))
+    return attributes
 
 
 def get_status(worker_id: str) -> Union[Box, None]:
@@ -47,9 +47,9 @@ def get_status(worker_id: str) -> Union[Box, None]:
     key = r_worker + worker_id
     if not (content := redis.get(key)):
         return None
-    content = json.loads(content)
+    content = Box(json.loads(content))
     content.worker_id = worker_id
-    return Box(json.loads(content))
+    return content
 
 
 @ns.route('')

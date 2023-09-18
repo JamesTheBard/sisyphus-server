@@ -31,7 +31,7 @@ def get_attributes(worker_id: str) -> Box:
     if not (attributes := redis.get(key)):
         attributes = json.dumps(workers_attributes_default, default=str)
         redis.set(key, attributes)
-    json.loads(attributes)
+    attributes = json.loads(attributes)
     return Box(attributes)
 
 

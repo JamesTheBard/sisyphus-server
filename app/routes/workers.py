@@ -17,7 +17,7 @@ r_worker = Config.REDIS_WORKER_PREFIX + '_id:'
 r_attributes = Config.REDIS_WORKER_PREFIX + '_attributes:'
 
 
-def get_attributes(self, worker_id: str) -> Box:
+def get_attributes(worker_id: str) -> Box:
     """Get the current worker attributes, and set the worker's defaults if the
     current attributes don't exist.
 
@@ -35,7 +35,7 @@ def get_attributes(self, worker_id: str) -> Box:
     return Box(attributes)
 
 
-def get_status(self, worker_id: str) -> Union[Box, None]:
+def get_status(worker_id: str) -> Union[Box, None]:
     """Get the current worker status from Redis and return it as a dict if it exists.
 
     Args:

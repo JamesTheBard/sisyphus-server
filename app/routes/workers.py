@@ -1,4 +1,5 @@
 import json
+from typing import Union
 
 from box import Box
 from flask import make_response, request
@@ -16,15 +17,52 @@ r_worker = Config.REDIS_WORKER_PREFIX + '_id:'
 r_attributes = Config.REDIS_WORKER_PREFIX + '_attributes:'
 
 
+def get_attributes(self, worker_id: str) -> Box:
+    """Get the current worker attributes, and set the worker's defaults if the
+    current attributes don't exist.
+
+    Args:
+        worker_id (str): The UUID of the worker
+
+    Returns:
+        Box: The attributes data for the worker.
+    """
+    key = r_attributes + worker_id
+    if not (attributes := redis.get(key)):
+        attributes = json.dumps(workers_attributes_default, default=str)
+        redis.set(key, attributes)
+    json.loads(attributes)
+    return Box(attributes)
+
+
+def get_status(self, worker_id: str) -> Union[Box, None]:
+    """Get the current worker status from Redis and return it as a dict if it exists.
+
+    Args:
+        worker_id (str): The UUID of the worker
+
+    Returns:
+        Union[Box, None]: The data from Redis if it exists.  None if it doesn't exist.
+    """
+    key = r_worker + worker_id
+    if not (content := redis.get(key)):
+        return None
+    return Box(json.loads(content))
+
+
 @ns.route('')
 class WorkersOperations(Resource):
     @ns.doc(description="Get all online workers.")
     @ns.response(200, 'Success', workers_model)
     def get(self):
         response = Box()
-        keys = redis.keys(r_worker + '*')
-        response.workers = [i.decode().split(':')[-1]
-                            for i in redis.keys(r_worker + '*')]
+        response.workers = list()
+        workers = [i.decode().split(':')[-1]
+                   for i in redis.keys(r_worker + '*')]
+        for worker_id in workers:
+            data = get_status(worker_id)
+            data.attributes = get_attributes(worker_id)
+            response.workers.append(data)
         response.count = len(response.workers)
         return response, 200
 
@@ -35,14 +73,9 @@ class WorkerOperations(Resource):
     @ns.response(200, 'Success', workers_status_model)
     @ns.response(404, 'Worker Not Found')
     def get(self, worker_id):
-        if not (content := redis.get(r_worker + worker_id)):
+        if not (content := get_status(worker_id)):
             return None, 404
-        content = Box(json.loads(content))
-        key = r_attributes + worker_id
-        if not (attributes := redis.get(key)):
-            attributes = json.dumps(workers_attributes_default, default=str)
-            redis.set(key, attributes)
-        content.attributes = json.loads(attributes)
+        content.attributes = get_attributes(worker_id)
         return content, 200
 
     @ns.doc(description="Update the current status of a worker.")

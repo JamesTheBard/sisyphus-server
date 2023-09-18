@@ -20,6 +20,7 @@ workers_status_post = api.model(
         'version': fields.String(description='The version of Sisyphus running on the worker.', required=True, version="1.0.0"),
         'task': fields.String(description='The module being run on the worker.', example="ffmpeg"),
         'job_id': fields.String(description='The ID of the job being run.', example="00000000-1111-2222-3333-444444444444"),
+        'job_title': fields.String(description='The title of the job being run.', example='Awesome Encoding Job'),
         'progress': fields.Float(description='The progress of the current task.', example=3.74),
         'info': fields.Raw(description='Additional information from the worker'),
     },
@@ -37,6 +38,6 @@ workers_disable_model = api.model('WorkerDisabled', {
 })
 
 workers_model = api.model('WorkersModel', {
-    'workers': fields.List(fields.String, description="The worker ID"),
+    'workers': fields.List(fields.Nested(workers_status_model)),
     'count': fields.Integer(description="The number of workers online.")
 })

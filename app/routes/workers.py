@@ -1,4 +1,5 @@
 import json
+import operator
 from typing import Union
 
 from box import Box
@@ -65,6 +66,7 @@ class WorkersOperations(Resource):
             data = get_status(worker_id)
             data.attributes = get_attributes(worker_id)
             response.workers.append(data)
+        response.workers = sorted(response.workers, key=operator.itemgetter('hostname'))
         response.count = len(response.workers)
         return response, 200
 

@@ -29,6 +29,7 @@ workers_status_post = api.model(
 
 workers_status_model = api.inherit('WorkerStatusModel', workers_status_post, {
     'attributes': fields.Nested(workers_attributes_model),
+    'worker_id': fields.String(description='The UUID of the worker')
 })
 
 workers_data_model = api.model('WorkerDataPost', {})

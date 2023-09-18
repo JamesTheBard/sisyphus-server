@@ -47,6 +47,8 @@ def get_status(worker_id: str) -> Union[Box, None]:
     key = r_worker + worker_id
     if not (content := redis.get(key)):
         return None
+    content = json.loads(content)
+    content.worker_id = worker_id
     return Box(json.loads(content))
 
 

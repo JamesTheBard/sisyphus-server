@@ -16,6 +16,7 @@ workers_attributes_model = api.model(
 workers_status_post = api.model(
     'WorkerStatusPost', {
         'status': fields.String(description='The current status of the worker.', required=True, example="in_progress"),
+        'online_at': fields.String(description='The start time of the worker.', required=True),
         'hostname': fields.String(description='The hostname of the worker.', required=True, example="encoder01"),
         'version': fields.String(description='The version of Sisyphus running on the worker.', required=True, version="1.0.0"),
         'task': fields.String(description='The module being run on the worker.', example="ffmpeg"),

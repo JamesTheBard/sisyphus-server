@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "sisyphus-server"
-version = "1.0.1"
+version = "1.2.0b1"
 description = ""
 authors = ["JamesTheBard <jamesthebard@gmail.com>"]
 readme = "README.md"
-packages = [{include = "sisyphus_server"}]
+packages = [{include = "main.py"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"

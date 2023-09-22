@@ -4,14 +4,21 @@ from flask_restx import fields
 
 from app import api
 
-example_task = {
-    "ffmpeg": {
-        "options": {}
+
+example_task = [
+    {
+        "module": "ffmpeg",
+        "data": {
+            "options": {}
+        }
     },
-    "matroska": {
-        "more_options": {}
+    {
+        "module": "matroska",
+        "data": {
+            "more_options": {}
+        }
     }
-}
+]
 
 queue_attributes_default = {
     'disabled': False,
@@ -24,10 +31,23 @@ queue_attributes_model = api.model(
     strict=True
 )
 
+job_attributes_model = api.model(
+    'JobAttributes', {
+        'failed': fields.Boolean(description='Whether the job failed or not.', default=True, example=True),
+        'info': fields.Raw(description='Completion information associated with the job.', default=True)
+    },
+    strict=True
+)
+
+tasks_info = api.model('TaskData', {
+    'module': fields.String(description='The name of the module to use', required=True),
+    'data': fields.Raw(description='The task data to send to the module', required=True),
+})
+
 queue_job_post = api.model(
     'QueueJobPost', {
         'job_title': fields.String(description='The title of the job', required=True, example="Awesome Encoder Job"),
-        'tasks': fields.Raw(description='The tasks associated with the job', required=True, example=example_task),
+        'tasks': fields.List(fields.Nested(tasks_info), description='The task information to use')
     },
     strict=True
 )

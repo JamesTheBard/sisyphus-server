@@ -33,7 +33,8 @@ queue_attributes_model = api.model(
 
 job_attributes_model = api.model(
     'JobAttributes', {
-        'failed': fields.Boolean(description='Whether the job failed or not.', default=True, example=True)
+        'failed': fields.Boolean(description='Whether the job failed or not.', default=True, example=True),
+        'info': fields.Raw(description='Completion information associated with the job.', default=True)
     },
     strict=True
 )

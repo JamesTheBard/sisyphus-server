@@ -35,8 +35,7 @@ def post_job(data: Union[Box, dict]) -> None:
     """
     data = Box(data)
     coll = db[Config.MONGO_JOB_QUEUED]
-    print(data.job_id)
-    result = coll.replace_one({"job_id": data.job_id}, data, upsert=True)
+    coll.replace_one({"job_id": data.job_id}, data, upsert=True)
 
 
 def delete_queued_jobs() -> None:
@@ -57,7 +56,7 @@ def delete_job(job_id: str) -> None:
     return bool(result.deleted_count)
 
 
-def complete_job(job_id: str, is_failed: bool = False) -> bool:
+def complete_job(job_id: str, info: Union[Box, dict], is_failed: bool = False,) -> bool:
     """Transfer a job to the appropriate collection after processing
     by the worker.
 
@@ -73,6 +72,7 @@ def complete_job(job_id: str, is_failed: bool = False) -> bool:
     dest_coll = db[getattr(Config, dest)]
     post = source_coll.find_one({"job_id": job_id})
     post.pop('_id')
+    post["info"] = info
     result = dest_coll.replace_one({"job_id": job_id}, post, upsert=True)
     if not result.acknowledged:
         return False

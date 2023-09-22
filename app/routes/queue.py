@@ -3,8 +3,9 @@ import uuid
 from datetime import datetime
 
 from box import Box
-from flask import request
+from flask import request, make_response
 from flask_restx import Resource
+from bson import json_util
 
 from app import Config, api, redis
 from app.models.queue import (queue_attributes_default, queue_attributes_model,
@@ -16,8 +17,15 @@ from app.helpers import mongo
 queue_ns = api.namespace('queue', description="Queue operations")
 job_ns = api.namespace('jobs', description="Job operations")
 
-r_queue = Config.REDIS_QUEUE_PREFIX
+r_queue = Config.REDIS_QUEUE_NAME
 r_queue_attributes = r_queue + '_attributes'
+
+
+class DTEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return str(obj)
+        return json.JSONEncoder.default(self.obj)
 
 
 @queue_ns.route('')
@@ -26,11 +34,12 @@ class QueueMain(Resource):
     @queue_ns.response(200, 'Success', queue_list_model)
     def get(self):
         queue = [mongo.get_job(i.decode())
-                 for i in reversed(redis.lrange("queue", 0, -1))]
+                 for i in reversed(redis.lrange(r_queue, 0, -1))]
         if not (attributes := redis.get(r_queue_attributes)):
             attributes = json.dumps(queue_attributes_default, default=str)
             redis.set(r_queue_attributes, attributes)
-        return {'queue': queue, 'entries': len(queue), 'attributes': json.loads(attributes)}, 200
+        content = {'queue': queue, 'entries': len(queue), 'attributes': json.loads(attributes)}
+        return make_response(json.dumps(content, cls=DTEncoder), 200)
 
     @queue_ns.doc(description="Add a job to the end of the current queue.")
     @queue_ns.expect(queue_job_post, validate=True)
@@ -40,7 +49,7 @@ class QueueMain(Resource):
         job_id = str(uuid.uuid4())
         req = Box(request.get_json())
         req.job_id = job_id
-        req.added = datetime.utcnow()
+        req.added = str(datetime.utcnow())
         redis.lpush(r_queue, job_id)
         mongo.post_job(req)
         return {'job_id': job_id}, 200
@@ -78,7 +87,7 @@ class PollQueue(Resource):
             return None, 404
         job_id = job_id.decode()
         content = mongo.get_job(job_id)
-        return content, 200
+        return make_response(json.dumps(content, cls=DTEncoder), 200)
 
 
 @job_ns.route('/<string:job_id>')
@@ -89,7 +98,7 @@ class JobMain(Resource):
     def get(self, job_id):
         if not (content := mongo.get_job(job_id)):
             return None, 404
-        return content, 200
+        return make_response(json.dumps(content, cls=DTEncoder), 200)
 
     @job_ns.doc(description="Remove a job from the queue")
     @job_ns.response(204, 'Job Removed')
@@ -109,6 +118,6 @@ class JobProcessingCompleted(Resource):
     @job_ns.response(404, 'Job ID Not Found')
     def patch(self, job_id):
         req = Box(request.get_json())
-        if not mongo.complete_job(job_id, req.failed):
+        if not mongo.complete_job(job_id, req.info, req.failed):
             return None, 404
         return None, 204

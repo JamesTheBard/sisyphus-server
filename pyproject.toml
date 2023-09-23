@@ -3,7 +3,7 @@ name = "sisyphus-server"
 version = "1.2.0b1"
 description = ""
 authors = ["JamesTheBard <jamesthebard@gmail.com>"]
-readme = "README.md"
+# readme = "README.md"
 packages = [{include = "main.py"}]
 
 [tool.poetry.dependencies]

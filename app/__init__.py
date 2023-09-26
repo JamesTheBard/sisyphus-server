@@ -5,10 +5,12 @@ import redis as r
 import logging
 from flask import Flask
 from flask_restx import Api, Resource
+from flask_cors import CORS
 
 from app.config import Config
 
 app = Flask(__name__)
+cors = CORS(app)
 app.logger.setLevel(logging.INFO)
 api = Api(app, doc="/doc/")
 

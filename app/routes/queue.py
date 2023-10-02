@@ -1,18 +1,18 @@
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from box import Box
-from flask import request, make_response
-from flask_restx import Resource
 from bson import json_util
+from flask import make_response, request
+from flask_restx import Resource
 
 from app import Config, api, redis
-from app.models.queue import (queue_attributes_default, queue_attributes_model,
-                              queue_id_model, queue_job_model, queue_job_post,
-                              queue_list_model, job_attributes_model)
-from app.models.workers import workers_disable_model
 from app.helpers import mongo
+from app.models.queue import (job_attributes_model, queue_attributes_default,
+                              queue_attributes_model, queue_id_model,
+                              queue_job_model, queue_job_post,
+                              queue_list_model)
 
 queue_ns = api.namespace('queue', description="Queue operations")
 job_ns = api.namespace('jobs', description="Job operations")
@@ -38,7 +38,8 @@ class QueueMain(Resource):
         if not (attributes := redis.get(r_queue_attributes)):
             attributes = json.dumps(queue_attributes_default, default=str)
             redis.set(r_queue_attributes, attributes)
-        content = {'queue': queue, 'entries': len(queue), 'attributes': json.loads(attributes)}
+        content = {'queue': queue, 'entries': len(
+            queue), 'attributes': json.loads(attributes)}
         return make_response(json.dumps(content, cls=DTEncoder), 200)
 
     @queue_ns.doc(description="Add a job to the end of the current queue.")
@@ -49,7 +50,7 @@ class QueueMain(Resource):
         job_id = str(uuid.uuid4())
         req = Box(request.get_json())
         req.job_id = job_id
-        req.added = str(datetime.now(tz=timezone.utc))
+        req.added = str(datetime.now(tz=Config.SERVER_TIMEZONE))
         redis.lpush(r_queue, job_id)
         mongo.post_job(req)
         return {'job_id': job_id}, 200

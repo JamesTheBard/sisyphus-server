@@ -4,7 +4,6 @@ from flask_restx import fields
 
 from app import api
 
-
 example_task = [
     {
         "module": "ffmpeg",

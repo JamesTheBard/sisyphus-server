@@ -1,6 +1,6 @@
 import os
 import tomllib
-from datetime import datetime
+from datetime import datetime, timezone
 
 from box import Box
 
@@ -24,7 +24,7 @@ class Config:
     MONGO_JOB_QUEUED = os.environ.get("MONGO_JOB_COLL_QUEUED", "queued")
 
     VERSION = pyproject.tool.poetry.version
-    START_TIME = datetime.now()
+    START_TIME = datetime.now(tz=timezone.utc)
 
     REDIS_QUEUE_NAME = os.environ.get('REDIS_QUEUE_NAME', 'queue')
     REDIS_WORKER_PREFIX = os.environ.get('REDIS_WORKER_PREFIX', 'worker')

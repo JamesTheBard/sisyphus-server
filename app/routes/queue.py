@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from box import Box
 from flask import request, make_response
@@ -49,7 +49,7 @@ class QueueMain(Resource):
         job_id = str(uuid.uuid4())
         req = Box(request.get_json())
         req.job_id = job_id
-        req.added = str(datetime.utcnow())
+        req.added = str(datetime.now(tz=timezone.utc))
         redis.lpush(r_queue, job_id)
         mongo.post_job(req)
         return {'job_id': job_id}, 200

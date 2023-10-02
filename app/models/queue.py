@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask_restx import fields
 
@@ -54,7 +54,7 @@ queue_job_post = api.model(
 
 queue_job_model = api.inherit('QueueJobModel', queue_job_post, {
     'job_id': fields.String(description='The Job ID for the job', example="00000000-1111-2222-3333-444444444444"),
-    'added': fields.DateTime(description="The date/time the job was added to the queue", example=str(datetime.utcnow()))
+    'added': fields.DateTime(description="The date/time the job was added to the queue", example=str(datetime.now(tz=timezone.utc)))
 })
 
 queue_list_model = api.model('QueueJobList', {

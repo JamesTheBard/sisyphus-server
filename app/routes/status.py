@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 import humanize
 from box import Box
@@ -32,7 +32,7 @@ class ServerStatus(Resource):
         }
         data.version = Config.VERSION
         data.uptime = humanize.naturaldelta(
-            datetime.now() - Config.START_TIME)
+            datetime.now(tz=timezone.utc) - Config.START_TIME)
         return data, 200
 
 

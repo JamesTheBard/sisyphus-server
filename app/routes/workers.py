@@ -93,7 +93,7 @@ class WorkerOperations(Resource):
 
     @ns.doc(description="Update the attributes of a worker.")
     @ns.expect(workers_attributes_model, validate=True)
-    @ns.response(204, 'Worker Attributes Updated')
+    @ns.response(200, 'Worker Attributes Updated', workers_attributes_model)
     @ns.response(400, 'Bad Request')
     def patch(self, worker_id):
         key = r_attributes + worker_id
@@ -102,7 +102,7 @@ class WorkerOperations(Resource):
         for k, v in req.items():
             attributes[k] = v
         redis.set(key, json.dumps(attributes, default=str))
-        return None, 204
+        return get_attributes(worker_id), 200
 
     @ns.doc(description="Remove the current status of a worker.")
     @ns.response(204, 'Worker Removed')

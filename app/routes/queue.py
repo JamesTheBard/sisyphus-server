@@ -57,7 +57,7 @@ class QueueMain(Resource):
 
     @queue_ns.doc(description="Change the attributes of the queue.")
     @queue_ns.expect(queue_attributes_model, validate=True)
-    @queue_ns.response(204, 'Updated Successfully')
+    @queue_ns.response(200, 'Updated Successfully', queue_attributes_model)
     @queue_ns.response(400, 'Bad Request')
     def patch(self):
         req = Box(request.get_json())
@@ -68,7 +68,7 @@ class QueueMain(Resource):
         for k, v in req.items():
             attributes[k] = v
         redis.set(r_queue_attributes, json.dumps(attributes, default=str))
-        return None, 204
+        return attributes, 200
 
     @queue_ns.doc(description="Clear all jobs from the queue.")
     @queue_ns.response(204, 'Queue Cleared')

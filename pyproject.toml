@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sisyphus-server"
-version = "1.3.2b1"
+version = "1.3.2"
 description = ""
 authors = ["JamesTheBard <jamesthebard@gmail.com>"]
 # readme = "README.md"

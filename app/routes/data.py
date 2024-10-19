@@ -23,7 +23,9 @@ class DataOpsMain(Resource):
         post = coll.find_one({"name": name})
         if post == None:
             return None, 404
-        return make_response(json_util.dumps(post), 200)
+        response = make_response(json_util.dumps(post), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
 
     @ns.doc(description="Configure data associated with a Sisyphus module")
     @ns.expect(modules_data_post)

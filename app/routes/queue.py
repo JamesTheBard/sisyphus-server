@@ -41,6 +41,7 @@ class QueueMain(Resource):
         content = {'queue': queue, 'entries': len(
             queue), 'attributes': json.loads(attributes)}
         response = make_response(json.dumps(content, cls=DTEncoder), 200)
+        return response
 
     @queue_ns.doc(description="Add a job to the end of the current queue.")
     @queue_ns.expect(queue_job_post, validate=True)
